@@ -1,3 +1,0 @@
-              - name: NPM Publisher
-                uses: lyzhang1999/npm-publish@v1.0.2
-            
