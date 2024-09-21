@@ -12,13 +12,12 @@ module.exports = class FastType extends events {
 
 
     if (!options.embed) options.embed = {};
-    if (!options.embed.title) options.embed.title = 'Fast Type';
+    if (!options.embed.title) options.embed.title = 'Digitação Rápida';
     if (!options.embed.color) options.embed.color = '#5865F2';
-    if (!options.embed.description) options.embed.description = 'You have {time} seconds to type the sentence below.';
-
-    if (!options.sentence) options.sentence = 'Some really cool sentence to fast type.';
-    if (!options.winMessage) options.winMessage = 'You won! You finished the type race in {time} seconds with word per minute of {wpm}.';
-    if (!options.loseMessage) options.loseMessage = 'You lost! You didn\'t type the correct sentence in time.';
+    if (!options.embed.description) options.embed.description = 'Você tem {time} segundos para digitar a frase abaixo.';
+    if (!options.sentence) options.sentence = 'Uma frase muito legal para digitação rápida.';
+    if (!options.winMessage) options.winMessage = 'Você venceu! Terminou a corrida de digitação em {time} segundos com {wpm} palavras por minuto.';
+    if (!options.loseMessage) options.loseMessage = 'Você perdeu! Não digitou a frase correta a tempo.';
     if (!options.timeoutTime) options.timeoutTime = 60000;
 
 
@@ -58,7 +57,7 @@ module.exports = class FastType extends events {
     .setColor(this.options.embed.color)
     .setTitle(this.options.embed.title)
     .setDescription(this.options.embed.description.replace('{time}', (this.options.timeoutTime/1000)))
-    .addFields({ name: 'Sentence', value: this.options.sentence.split(' ').map(e => '`'+ e.split('').join(' ')+'`').join(' ') })
+    .addFields({ name: 'Frase', value: this.options.sentence.split(' ').map(e => '`'+ e.split('').join(' ')+'`').join(' ') })
     .setAuthor({ name: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) })
 
 

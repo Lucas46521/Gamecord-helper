@@ -1,47 +1,47 @@
 const { EmbedBuilder, ActionRowBuilder, AttachmentBuilder } = require('discord.js');
 const { disableButtons, formatMessage, move, oppDirection, ButtonBuilder } = require('../utils/utils');
-const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
 const events = require('events');
-
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const path = require('path');
 
 module.exports = class TwoZeroFourEight extends events {
   constructor(options = {}) {
-
-    if (!options.isSlashGame) options.isSlashGame = false;
     if (!options.message) throw new TypeError('NO_MESSAGE: No message option was provided.');
+    if (!options.isSlashGame) options.isSlashGame = false;
+    if (!options.timeoutTime) options.timeoutTime = 60000;
+    if (!options.buttonStyle) options.buttonStyle = 'PRIMARY';
     if (typeof options.message !== 'object') throw new TypeError('INVALID_MESSAGE: message option must be an object.');
     if (typeof options.isSlashGame !== 'boolean') throw new TypeError('INVALID_COMMAND_TYPE: isSlashGame option must be a boolean.');
-
+    if (typeof options.timeoutTime !== 'number') throw new TypeError('INVALID_TIME: Timeout time option must be a number.');
+    if (typeof options.buttonStyle !== 'string') throw new TypeError('INVALID_BUTTON_STYLE: button style must be a string.');
+    if (options.playerOnlyMessage !== false) {
+      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Apenas {player} pode usar esses botões.';
+      if (typeof options.playerOnlyMessage !== 'string') throw new TypeError('INVALID_MESSAGE: playerOnlyMessage option must be a string.');
+    };
 
     if (!options.embed) options.embed = {};
     if (!options.embed.title) options.embed.title = '2048';
     if (!options.embed.color) options.embed.color = '#5865F2';
+    if (!options.embed.fields) options.embed.fields = [];
+    if (!options.embed.footer) options.embed.footer = {};
+    if (!options.embed.timestamp) options.embed.timestamp = false;
+    if (!options.embed.footerEnabled) options.embed.footerEnabled = false;
+    if (typeof options.embed !== 'object') throw new TypeError('INVALID_EMBED: embed option must be an object.');
+    if (typeof options.embed.title !== 'string') throw new TypeError('INVALID_EMBED: embed title must be a string.');
+    if (typeof options.embed.color !== 'string') throw new TypeError('INVALID_EMBED: embed color must be a string.');
+    if (typeof options.embed.footerEnabled !== 'boolean') throw new TypeError('INVALID_FOOTER: footerEnabled option must be a boolean.');
+    if (typeof options.embed.timestamp !== 'boolean') throw new TypeError('INVALID_TIMESTAMP: timestamp option must be a boolean.');
 
     if (!options.emojis) options.emojis = {};
     if (!options.emojis.up) options.emojis.up = '⬆️';
     if (!options.emojis.down) options.emojis.down = '⬇️';
     if (!options.emojis.left) options.emojis.left = '⬅️';
     if (!options.emojis.right) options.emojis.right = '➡️';
-    
-    if (!options.timeoutTime) options.timeoutTime = 60000;
-    if (!options.buttonStyle) options.buttonStyle = 'PRIMARY';
-
-
-    if (typeof options.embed !== 'object') throw new TypeError('INVALID_EMBED: embed option must be an object.');
-    if (typeof options.embed.title !== 'string') throw new TypeError('INVALID_EMBED: embed title must be a string.');
-    if (typeof options.embed.color !== 'string') throw new TypeError('INVALID_EMBED: embed color must be a string.');
     if (typeof options.emojis !== 'object') throw new TypeError('INVALID_EMOJIS: emojis option must be an object.');
     if (typeof options.emojis.up !== 'string') throw new TypeError('INVALID_EMOJIS: up emoji must be an string.');
     if (typeof options.emojis.down !== 'string') throw new TypeError('INVALID_EMOJIS: down emoji must be an string.');
     if (typeof options.emojis.left !== 'string') throw new TypeError('INVALID_EMOJIS: left emoji must be an string.');
     if (typeof options.emojis.right !== 'string') throw new TypeError('INVALID_EMOJIS: right emoji must be an string.');
-    if (typeof options.timeoutTime !== 'number') throw new TypeError('INVALID_TIME: Timeout time option must be a number.');
-    if (typeof options.buttonStyle !== 'string') throw new TypeError('INVALID_BUTTON_STYLE: button style must be a string.');
-    if (options.playerOnlyMessage !== false) {
-      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Only {player} can use these buttons.';
-      if (typeof options.playerOnlyMessage !== 'string') throw new TypeError('INVALID_MESSAGE: playerOnlyMessage option must be a string.');
-    }
-
 
     super();
     this.options = options;
@@ -58,35 +58,73 @@ module.exports = class TwoZeroFourEight extends events {
     }
   }
 
-
   async sendMessage(content) {
     if (this.options.isSlashGame) return await this.message.editReply(content);
     else return await this.message.channel.send(content);
   }
 
   async getBoardImage() {
-    const url = 'https://api.aniket091.xyz/2048?board=' + this.gameBoard.map(c => chars[c]).join('');
-    return await new AttachmentBuilder(url, { name: 'gameboard.png' });
-  }
+    const canvas = createCanvas(this.length * 100, this.length * 100);
+    const ctx = canvas.getContext('2d');
+    const imageFilenames = [
+      '0.png', '2.png', '4.png', '8.png', '16.png', '32.png', 
+      '64.png', '128.png', '256.png', '512.png', '1024.png', '2048.png',
+    ];
 
+    const images = {};
+    for (let i = 0; i < imageFilenames.length; i++) {
+      const imagePath = path.join(__dirname, 'boardImages', imageFilenames[i]);
+      images[i] = await loadImage(imagePath).catch(err => {
+        console.error(`Error loading image: ${imagePath}`);
+        throw err;
+      });
+    }
+
+    for (let y = 0; y < this.length; y++) {
+      for (let x = 0; x < this.length; x++) {
+        const tileValue = this.gameBoard[y * this.length + x];
+        const tileImage = images[tileValue];
+
+        if (tileImage) {
+          ctx.drawImage(tileImage, x * 100, y * 100, 100, 100);
+        }
+      }
+    }
+
+    return canvas.encode('png').then(buffer => new AttachmentBuilder(buffer, { name: 'gameboard.png' }));
+  }
 
   async startGame() {
     if (this.options.isSlashGame || !this.message.author) {
-      if (!this.message.deferred) await this.message.deferReply().catch(e => {});
+      if (!this.message.deferred) await this.message.deferReply().catch(e => { });
       this.message.author = this.message.user;
       this.options.isSlashGame = true;
     }
     this.placeRandomTile();
     this.placeRandomTile();
 
-
     const embed = new EmbedBuilder()
-    .setTitle(this.options.embed.title)
-    .setColor(this.options.embed.color)
-    .setImage('attachment://gameboard.png')
-    .addFields({ name: 'Current Score', value: this.score.toString() })
-    .setFooter({ text: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) });
+      .setTitle(this.options.embed.title)
+      .setColor(this.options.embed.color)
+      .setImage('attachment://gameboard.png')
+      .addFields({ name: 'Pontuação atual', value: this.score.toString() });
 
+    if (this.options.embed.timestamp) {
+      embed.setTimestamp();
+    }
+
+    if (this.options.embed.footerEnabled) {
+      if (this.options.embed.footer.iconURL) {
+        embed.setFooter({
+          text: this.options.embed.footer.text,
+        });
+      } else {
+        embed.setFooter({
+          text: this.options.embed.footer.text,
+          iconURL: this.options.embed.footer.iconURL
+        });
+      }
+    }
 
     const up = new ButtonBuilder().setEmoji(this.options.emojis.up).setStyle(this.options.buttonStyle).setCustomId('2048_up');
     const down = new ButtonBuilder().setEmoji(this.options.emojis.down).setStyle(this.options.buttonStyle).setCustomId('2048_down');
@@ -94,28 +132,25 @@ module.exports = class TwoZeroFourEight extends events {
     const right = new ButtonBuilder().setEmoji(this.options.emojis.right).setStyle(this.options.buttonStyle).setCustomId('2048_right');
     const row = new ActionRowBuilder().addComponents(up, down, left, right);
 
-
     const msg = await this.sendMessage({ embeds: [embed], components: [row], files: [await this.getBoardImage()] });
     return this.handleButtons(msg);
   }
-
 
   placeRandomTile() {
     let tilePos = { x: 0, y: 0 };
 
     do {
       tilePos = { x: parseInt(Math.random() * this.length), y: parseInt(Math.random() * this.length) };
-    } while (this.gameBoard[tilePos.y * this.length + tilePos.x] != 0)
+    } while (this.gameBoard[tilePos.y * this.length + tilePos.x] != 0);
+    
     this.gameBoard[tilePos.y * this.length + tilePos.x] = (Math.random() > 0.8 ? 2 : 1);
   }
-
 
   async handleButtons(msg) {
     const collector = msg.createMessageComponentCollector({ idle: this.options.timeoutTime });
 
-
     collector.on('collect', async btn => {
-      await btn.deferUpdate().catch(e => {});
+      await btn.deferUpdate().catch(e => { });
       if (btn.user.id !== this.message.author.id) {
         if (this.options.playerOnlyMessage) btn.followUp({ content: formatMessage(this.options, 'playerOnlyMessage'), ephemeral: true });
         return;
@@ -130,39 +165,84 @@ module.exports = class TwoZeroFourEight extends events {
       if (moved) this.placeRandomTile();
       if (this.isGameOver()) return collector.stop();
 
-
       const embed = new EmbedBuilder()
-      .setTitle(this.options.embed.title)
-      .setColor(this.options.embed.color)
-      .setImage('attachment://gameboard.png')
-      .addFields({ name: 'Current Score', value: this.score.toString() })
-      .setFooter({ text: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) });
+        .setTitle(this.options.embed.title)
+        .setColor(this.options.embed.color)
+        .setImage('attachment://gameboard.png');
+
+      if (this.options.embed.fields) {
+        for (const field of this.options.embed.fields) {
+          const replacedValue = field.value
+            .replace('{player.tag}', this.message.author.tag)
+            .replace('{player.username}', this.message.author.username)
+            .replace('{player}', `<@!${this.message.author.id}>`)
+            .replace('{player.displayName}', this.message.author.displayName)
+            .replace('{score}', this.score.toString());
+
+          embed.addFields({
+            name: field.name,
+            value: replacedValue,
+            inline: field.inline || false,
+          });
+        }
+      }
+
+      if (this.options.embed.timestamp) {
+        embed.setTimestamp();
+      }
+
+      if (this.options.embed.footerEnabled) {
+        if (this.options.embed.footer.iconURL) {
+          embed.setFooter({
+            text: this.options.embed.footer.text,
+          });
+        } else {
+          embed.setFooter({
+            text: this.options.embed.footer.text,
+            iconURL: this.options.embed.footer.iconURL
+          });
+        }
+      }
 
       return msg.edit({ embeds: [embed], files: [await this.getBoardImage()], attachments: [] });
-    })
+    });
 
     collector.on('end', (_, reason) => {
       if (reason === 'idle' || reason === 'user') {
         return this.gameOver(msg, this.gameBoard.includes('b'));
       }
-    })
+    });
   }
-
 
   async gameOver(msg, result) {
     const TwoZeroFourEightGame = { player: this.message.author, score: this.score };
     this.emit('gameOver', { result: (result ? 'win' : 'lose'), ...TwoZeroFourEightGame });
 
     const embed = new EmbedBuilder()
-    .setTitle(this.options.embed.title)
-    .setColor(this.options.embed.color)
-    .setImage('attachment://gameboard.png')
-    .addFields({ name: 'Total Score', value: this.score.toString() })
-    .setFooter({ text: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) });
+      .setTitle(this.options.embed.title)
+      .setColor(this.options.embed.color)
+      .setImage('attachment://gameboard.png')
+      .addFields({ name: 'Pontuação total', value: this.score.toString() });
+
+    if (this.options.embed.timestamp) {
+      embed.setTimestamp();
+    }
+
+    if (this.options.embed.footerEnabled) {
+      if (this.options.embed.footer.iconURL) {
+        embed.setFooter({
+          text: this.options.embed.footer.text,
+        });
+      } else {
+        embed.setFooter({
+          text: this.options.embed.footer.text,
+          iconURL: this.options.embed.footer.iconURL
+        });
+      }
+    }
 
     return msg.edit({ embeds: [embed], components: disableButtons(msg.components), files: [await this.getBoardImage()], attachments: [] });
   }
-
 
   isGameOver() {
     let boardFull = true;
@@ -174,14 +254,13 @@ module.exports = class TwoZeroFourEight extends events {
         const posNum = this.gameBoard[y * this.length + x];
 
         ['down', 'left', 'right', 'up'].forEach(dir => {
-          const newPos = move({x, y}, dir);
+          const newPos = move({ x, y }, dir);
           if (this.isInsideBlock(newPos) && (this.gameBoard[newPos.y * this.length + newPos.x] === 0 || this.gameBoard[newPos.y * this.length + newPos.x] === posNum)) numMoves++;
-        })
+        });
       }
     }
     return (boardFull && numMoves === 0);
   }
-
 
   shiftVertical(dir) {
     let moved = false;
@@ -195,7 +274,6 @@ module.exports = class TwoZeroFourEight extends events {
     return moved;
   }
 
-
   shiftHorizontal(dir) {
     let moved = false;
     for (let y = 0; y < this.length; y++) {
@@ -208,17 +286,14 @@ module.exports = class TwoZeroFourEight extends events {
     return moved;
   }
 
-
   isInsideBlock(pos) {
     return pos.x >= 0 && pos.y >= 0 && pos.x < this.length && pos.y < this.length;
   }
-
 
   shift(pos, dir) {
     let moved = false;
     const movingTile = this.gameBoard[pos.y * this.length + pos.x];
     if (movingTile === 0) return false;
-
 
     let set = false;
     let moveTo = pos;
@@ -234,8 +309,7 @@ module.exports = class TwoZeroFourEight extends events {
           moved = true;
         }
         set = true;
-      }
-      else if (moveToTile === movingTile) {
+      } else if (moveToTile === movingTile) {
         moved = true;
         this.gameBoard[moveTo.y * this.length + moveTo.x] += 1;
         this.score += Math.floor(Math.pow(this.gameBoard[moveTo.y * this.length + moveTo.x], 2));

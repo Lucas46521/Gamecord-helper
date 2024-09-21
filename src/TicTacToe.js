@@ -17,7 +17,7 @@ module.exports = class TicTacToe extends approve {
     if (!options.embed) options.embed = {};
     if (!options.embed.title) options.embed.title = 'Tic Tac Toe';
     if (!options.embed.statusTitle) options.embed.statusTitle = 'Status';
-    if (!options.embed.overTitle) options.embed.overTitle = 'Game Over';
+    if (!options.embed.overTitle) options.embed.overTitle = 'Fim de jogo';
     if (!options.embed.color) options.embed.color = '#5865F2';
 
     if (!options.emojis) options.emojis = {};
@@ -28,12 +28,13 @@ module.exports = class TicTacToe extends approve {
     if (!options.timeoutTime) options.timeoutTime = 60000;
     if (!options.xButtonStyle) options.xButtonStyle = 'DANGER';
     if (!options.oButtonStyle) options.oButtonStyle = 'PRIMARY';
-    if (!options.turnMessage) options.turnMessage = '{emoji} | Its turn of player **{player}**.';
-    if (!options.winMessage) options.winMessage = '{emoji} | **{player}** won the TicTacToe Game.';
-    if (!options.tieMessage) options.tieMessage = 'The Game tied! No one won the Game!';
-    if (!options.timeoutMessage) options.timeoutMessage = 'The Game went unfinished! No one won the Game!';
-    if (!options.requestMessage) options.requestMessage = '{player} has invited you for a round of **Tic Tac Toe**.';
-    if (!options.rejectMessage) options.rejectMessage = 'The player denied your request for a round of **Tic Tac Toe**.';
+    if (!options.turnMessage) options.turnMessage = '{emoji} | É a vez do jogador **{player}**.';
+    if (!options.winMessage) options.winMessage = '{emoji} | **{player}** venceu o jogo da Velha.';
+    if (!options.tieMessage) options.tieMessage = 'O jogo empatou! Ninguém venceu o jogo!';
+    if (!options.timeoutMessage) options.timeoutMessage = 'O jogo não foi concluído! Ninguém venceu o jogo!';
+    if (!options.requestMessage) options.requestMessage = '{player} convidou você para uma rodada de **Jogo da Velha**.';
+    if (!options.rejectMessage) options.rejectMessage = 'O jogador recusou seu pedido para uma rodada de **Jogo da Velha**.';
+
 
 
     if (typeof options.embed !== 'object') throw new TypeError('INVALID_EMBED: embed option must be an object.');

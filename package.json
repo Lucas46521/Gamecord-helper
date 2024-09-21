@@ -1,7 +1,7 @@
 {
-  "name": "gamecord-helper",
-  "version": "4.2.0",
-  "description": "Discord Gamecord is a powerful npm package with a collection of minigames for your discord bot",
+  "name": "discord-gamecord-ptbr",
+  "version": "1.0.7",
+  "description": "Discord-Gamecord-Ptbr é um fork da package discord-gamecord um pacote poderoso com uma coleção de minigames para seu bot discord",
   "main": "index.js",
   "scripts": {
     "test": "cd test && node ."
@@ -9,18 +9,16 @@
   "author": "Aniket#0729",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.6.0",
+    "@napi-rs/canvas": "^0.1.56",
+    "discord.js": "^14.14.1",
     "html-entities": "^2.3.3",
     "node-fetch": "^2.6.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/aniket091/Gamecord.git"
   },
   "homepage": "https://discord-gamecord.js.org/",
   "keywords": [
     "discord-gamecord",
     "discord-games",
+    "gamecord-ptbr",
     "discord.js",
     "minigames"
   ],

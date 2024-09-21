@@ -26,12 +26,12 @@ module.exports = class Connect4 extends approve {
 
     if (!options.timeoutTime) options.timeoutTime = 60000;
     if (!options.buttonStyle) options.buttonStyle = 'PRIMARY';
-    if (!options.turnMessage) options.turnMessage = '{emoji} | Its turn of player **{player}**.';
-    if (!options.winMessage) options.winMessage = '{emoji} | **{player}** won the Connect4 Game.';
-    if (!options.tieMessage) options.tieMessage = 'The Game tied! No one won the Game!';
-    if (!options.timeoutMessage) options.timeoutMessage = 'The Game went unfinished! No one won the Game!';
-    if (!options.requestMessage) options.requestMessage = '{player} has invited you for a round of **Connect4**.';
-    if (!options.rejectMessage) options.rejectMessage = 'The player denied your request for a round of **Connect4**.';
+    if (!options.turnMessage) options.turnMessage = '{emoji} | É a vez do jogador **{player}**.';
+    if (!options.winMessage) options.winMessage = '{emoji} | **{player}** ganhou o jogo Connect4.';
+    if (!options.tieMessage) options.tieMessage = 'O Jogo empatou! Ninguém ganhou o Jogo!';
+    if (!options.timeoutMessage) options.timeoutMessage = 'O Jogo ficou inacabado! Ninguém ganhou o Jogo!';
+    if (!options.requestMessage) options.requestMessage = '{player} convidou você para uma partida de **Connect4**.';
+    if (!options.rejectMessage) options.rejectMessage = 'O jogador recusou seu pedido para uma partida de **Connect4**.';
 
 
     if (typeof options.embed !== 'object') throw new TypeError('INVALID_EMBED: embed option must be an object.');
