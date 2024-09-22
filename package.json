@@ -1,6 +1,6 @@
 {
   "name": "discord-gamecord-ptbr",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Discord-Gamecord-Ptbr é um fork da package discord-gamecord um pacote poderoso com uma coleção de minigames para seu bot discord",
   "main": "index.js",
   "scripts": {
