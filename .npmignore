@@ -1,0 +1,12 @@
+.git
+.github
+.ump
+.cache
+node_modules
+.config
+.replit
+ump
+replit.nix
+.gitignore
+.env
+.npmignore
