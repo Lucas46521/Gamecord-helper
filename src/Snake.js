@@ -15,9 +15,9 @@ module.exports = class SnakeGame extends events {
 
 
     if (!options.embed) options.embed = {};
-    if (!options.embed.title) options.embed.title = 'Snake Game';
+    if (!options.embed.title) options.embed.title = 'Jogo da Cobrinha';
     if (!options.embed.color) options.embed.color = '#5865F2';
-    if (!options.embed.overTitle) options.embed.overTitle = 'Game Over';
+    if (!options.embed.overTitle) options.embed.overTitle = 'Fim de Jogo';
 
     if (!options.snake) options.snake = {};
     if (!options.snake.head) options.snake.head = '🟢';
@@ -35,7 +35,7 @@ module.exports = class SnakeGame extends events {
     if (!options.emojis.right) options.emojis.right = '➡️';
 
     if (!options.foods) options.foods = [];
-    if (!options.stopButton) options.stopButton = 'Stop';
+    if (!options.stopButton) options.stopButton = 'Parar';
     if (!options.timeoutTime) options.timeoutTime = 60000;
     
 
@@ -54,7 +54,7 @@ module.exports = class SnakeGame extends events {
     if (typeof options.stopButton !== 'string') throw new TypeError('INVALID_STOPBUTTON: StopButton option must be a string.');
     if (!Array.isArray(options.foods)) throw new TypeError('INVALID_FOODS: foods option must be an array.');
     if (options.playerOnlyMessage !== false) {
-      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Only {player} can use these buttons.';
+      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Somente {player} pode usar esses botões.';
       if (typeof options.playerOnlyMessage !== 'string') throw new TypeError('INVALID_MESSAGE: playerOnly Message option must be a string.');
     }
     
@@ -145,7 +145,7 @@ module.exports = class SnakeGame extends events {
     const embed = new EmbedBuilder()
     .setColor(this.options.embed.color)
     .setTitle(this.options.embed.title)
-    .setDescription('**Score:** ' + this.score + '\n\n' + this.getBoardContent())
+    .setDescription('**Pontuação:** ' + this.score + '\n\n' + this.getBoardContent())
     .setFooter({ text: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) })
 
 
@@ -175,7 +175,7 @@ module.exports = class SnakeGame extends events {
     const embed = new EmbedBuilder()
     .setColor(this.options.embed.color)
     .setTitle(this.options.embed.title)
-    .setDescription('**Score:** ' + this.score + '\n\n' + this.getBoardContent())
+    .setDescription('**Pontuação:** ' + this.score + '\n\n' + this.getBoardContent())
     .setFooter({ text: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) })
 
     return msg.edit({ embeds: [embed] });
@@ -190,7 +190,7 @@ module.exports = class SnakeGame extends events {
     const embed = new EmbedBuilder()
     .setColor(this.options.embed.color)
     .setTitle(this.options.embed.overTitle)
-    .setDescription('**Score:** ' + this.score + '\n\n' + this.getBoardContent(true))
+    .setDescription('**Pontuação:** ' + this.score + '\n\n' + this.getBoardContent(true))
     .setFooter({ text: this.message.author.tag, iconURL: this.message.author.displayAvatarURL({ dynamic: true }) })
 
     return msg.edit({ embeds: [embed], components: disableButtons(msg.components) });

@@ -13,9 +13,9 @@ module.exports = class Minesweeper extends events {
 
 
     if (!options.embed) options.embed = {};
-    if (!options.embed.title) options.embed.title = 'Minesweeper';
+    if (!options.embed.title) options.embed.title = 'Campo Minado';
     if (!options.embed.color) options.embed.color = '#5865F2';
-    if (!options.embed.description) options.embed.description = 'Click on the buttons to reveal the blocks except mines.';
+    if (!options.embed.description) options.embed.description = 'Clique nos botões para revelar os blocos, exceto as minas.';
 
     if (!options.emojis) options.emojis = {};
     if (!options.emojis.flag) options.emojis.flag = '🚩';
@@ -23,8 +23,8 @@ module.exports = class Minesweeper extends events {
 
     if (!options.mines) options.mines = 5;
     if (!options.timeoutTime) options.timeoutTime = 60000;
-    if (!options.winMessage) options.winMessage = 'You won the Game! You successfully avoided all the mines.';
-    if (!options.loseMessage) options.loseMessage = 'You lost the Game! Beaware of the mines next time.';
+    if (!options.winMessage) options.winMessage = 'Você venceu o jogo! Você evitou com sucesso todas as minas.';
+    if (!options.loseMessage) options.loseMessage = 'Você perdeu o jogo! Cuidado com as minas da próxima vez.';
 
 
     if (typeof options.embed !== 'object') throw new TypeError('INVALID_EMBED: embed option must be an object.');
@@ -40,7 +40,7 @@ module.exports = class Minesweeper extends events {
     if (typeof options.loseMessage !== 'string') throw new TypeError('INVALID_MESSAGE: Lose Message option must be a string.');
     if (options.mines < 1 || options.mines > 24) throw new RangeError('INVALID_MINES: mines option must be between 1 and 24.');
     if (options.playerOnlyMessage !== false) {
-      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Only {player} can use these buttons.';
+      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Somente {player} pode usar esses botões.';
       if (typeof options.playerOnlyMessage !== 'string') throw new TypeError('INVALID_MESSAGE: playerOnly Message option must be a string.');
     }
 

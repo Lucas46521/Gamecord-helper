@@ -2,27 +2,35 @@ const { EmbedBuilder, ActionRowBuilder } = require('discord.js');
 const { formatMessage, ButtonBuilder } = require('../utils/utils');
 const approve = require('../utils/approve');
 
-
-module.exports = class RPSGame extends approve {
+module.exports = class JogoRPS extends approve {
   constructor(options = {}) {
 
     if (!options.isSlashGame) options.isSlashGame = false;
     if (!options.message) throw new TypeError('NO_MESSAGE: No message option was provided.');
-    if (!options.opponent) throw new TypeError('NO_OPPONENT: No opponent option was provided.');
+    if (!options.opponent) {
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000') // Cor vermelha para o aviso
+        .setTitle('Aviso')
+        .setDescription('Você precisa fornecer um oponente para iniciar o jogo de Pedra Papel Tesoura.');
+
+      options.message.channel.send({ embeds: [embed] });
+      
+      throw new TypeError('NO_OPPONENT: No opponent option was provided.');
+    };
+    
     if (typeof options.message !== 'object') throw new TypeError('INVALID_MESSAGE: message option must be an object.');
     if (typeof options.isSlashGame !== 'boolean') throw new TypeError('INVALID_COMMAND_TYPE: isSlashGame option must be a boolean.');
     if (typeof options.opponent !== 'object') throw new TypeError('INVALID_OPPONENT: opponent option must be an object.');
 
-
     if (!options.embed) options.embed = {};
-    if (!options.embed.title) options.embed.title = 'Rock Paper Scissors';
+    if (!options.embed.title) options.embed.title = 'Pedra Papel Tesoura';
     if (!options.embed.color) options.embed.color = '#5865F2';
-    if (!options.embed.description) options.embed.description = 'Press a button below to make a choice.';
+    if (!options.embed.description) options.embed.description = 'Pressione um botão abaixo para fazer uma escolha.';
 
     if (!options.buttons) options.buttons = {};
-    if (!options.buttons.rock) options.buttons.rock = 'Rock';
-    if (!options.buttons.paper) options.buttons.paper = 'Paper';
-    if (!options.buttons.scissors) options.buttons.scissors = 'Scissors';
+    if (!options.buttons.rock) options.buttons.rock = 'Pedra';
+    if (!options.buttons.paper) options.buttons.paper = 'Papel';
+    if (!options.buttons.scissors) options.buttons.scissors = 'Tesoura';
 
     if (!options.emojis) options.emojis = {};
     if (!options.emojis.rock) options.emojis.rock = '🌑';
@@ -31,13 +39,12 @@ module.exports = class RPSGame extends approve {
 
     if (!options.timeoutTime) options.timeoutTime = 60000;
     if (!options.buttonStyle) options.buttonStyle = 'PRIMARY';
-    if (!options.pickMessage) options.pickMessage = 'You choose {emoji}.';
-    if (!options.winMessage) options.winMessage = '**{player}** won the Game! Congratulations!';
-    if (!options.tieMessage) options.tieMessage = 'The Game tied! No one won the Game!';
-    if (!options.timeoutMessage) options.timeoutMessage = 'The Game went unfinished! No one won the Game!';
-    if (!options.requestMessage) options.requestMessage = '{player} has invited you for a round of **Rock Paper Scissors**.';
-    if (!options.rejectMessage) options.rejectMessage = 'The player denied your request for a round of **Rock Paper Scissors**.';
-
+    if (!options.pickMessage) options.pickMessage = 'Você escolheu {emoji}.';
+    if (!options.winMessage) options.winMessage = '**{player}** ganhou o jogo! Parabéns!';
+    if (!options.tieMessage) options.tieMessage = 'O jogo empatou! Ninguém ganhou o jogo!';
+    if (!options.timeoutMessage) options.timeoutMessage = 'O jogo não foi finalizado! Ninguém ganhou o jogo!';
+    if (!options.requestMessage) options.requestMessage = '{player} te convidou para uma rodada de **Pedra Papel Tesoura**.';
+    if (!options.rejectMessage) options.rejectMessage = 'O jogador negou seu pedido para uma rodada de **Pedra Papel Tesoura**.';
 
     if (typeof options.embed !== 'object') throw new TypeError('INVALID_EMBED: embed option must be an object.');
     if (typeof options.embed.title !== 'string') throw new TypeError('INVALID_EMBED: embed title must be a string.');
@@ -58,10 +65,9 @@ module.exports = class RPSGame extends approve {
     if (typeof options.tieMessage !== 'string') throw new TypeError('INVALID_MESSAGE: Tie message option must be a string.');
     if (typeof options.timeoutMessage !== 'string') throw new TypeError('INVALID_MESSAGE: Timeout message option must be a string.');
     if (options.playerOnlyMessage !== false) {
-      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Only {player} and {opponent} can use these buttons.';
+      if (!options.playerOnlyMessage) options.playerOnlyMessage = 'Apenas {player} e {opponent} podem usar esses botões.';
       if (typeof options.playerOnlyMessage !== 'string') throw new TypeError('INVALID_MESSAGE: playerOnly Message option must be a string.');
     }
-
 
     super(options);
     this.options = options;
@@ -70,7 +76,6 @@ module.exports = class RPSGame extends approve {
     this.playerPick = null;
     this.opponentPick = null;
   }
-
 
   async sendMessage(content) {
     if (this.options.isSlashGame) return await this.message.editReply(content);
@@ -88,19 +93,16 @@ module.exports = class RPSGame extends approve {
     if (approve) this.RPSGame(approve);
   }
 
-
   async RPSGame(msg) {
-
     const emojis = this.options.emojis;
     const labels = this.options.buttons;
     const choice = { r: emojis.rock, p: emojis.paper, s: emojis.scissors };
 
     const embed = new EmbedBuilder()
-    .setColor(this.options.embed.color)
-    .setTitle(this.options.embed.title)
-    .setDescription(this.options.embed.description)
-    .setFooter({ text: this.message.author.tag + ' vs ' + this.opponent.tag })
-
+      .setColor(this.options.embed.color)
+      .setTitle(this.options.embed.title)
+      .setDescription(this.options.embed.description)
+      .setFooter({ text: this.message.author.tag + ' vs ' + this.opponent.tag });
 
     const r = new ButtonBuilder().setStyle(this.options.buttonStyle).setEmoji(choice.r).setCustomId('rps_r').setLabel(labels.rock);
     const p = new ButtonBuilder().setStyle(this.options.buttonStyle).setEmoji(choice.p).setCustomId('rps_p').setLabel(labels.paper);
@@ -110,7 +112,6 @@ module.exports = class RPSGame extends approve {
     await msg.edit({ content: null, embeds: [embed], components: [row] });
     const collector = msg.createMessageComponentCollector({ idle: this.options.timeoutTime });
 
-
     collector.on('collect', async btn => {
       await btn.deferUpdate().catch(e => {});
       if (btn.user.id !== this.message.author.id && btn.user.id !== this.opponent.id) {
@@ -118,23 +119,20 @@ module.exports = class RPSGame extends approve {
         return;
       }
 
-
       if (btn.user.id === this.message.author.id && !this.playerPick) {
         this.playerPick = choice[btn.customId.split('_')[1]];
         btn.followUp({ content: this.options.pickMessage.replace('{emoji}', this.playerPick), ephemeral: true });
-      } 
-      else if (!this.opponentPick) {
+      } else if (!this.opponentPick) {
         this.opponentPick = choice[btn.customId.split('_')[1]];
         btn.followUp({ content: this.options.pickMessage.replace('{emoji}', this.opponentPick), ephemeral: true });
       }
       if (this.playerPick && this.opponentPick) return collector.stop();
-    })
+    });
 
     collector.on('end', async (_, reason) => {
       if (reason === 'idle' || reason === 'user') return this.gameOver(msg, this.getResult());
-    })
+    });
   }
-
 
   getResult() {
     if (!this.playerPick && !this.opponentPick) return 'timeout';
@@ -147,23 +145,21 @@ module.exports = class RPSGame extends approve {
     return ((this.playerPick === s && this.opponentPick === p) || (this.playerPick === r && this.opponentPick === s) || (this.playerPick === p && this.opponentPick === r));
   }
 
-
   async gameOver(msg, result) {
-    const RPSGame = { player: this.message.author, opponent: this.opponent, playerPick: this.playerPick, opponentPick: this.opponentPick };
-    if (result === 'win') RPSGame.winner = this.player1Won() ? this.message.author.id : this.opponent.id;
-    this.emit('gameOver', { result, ...RPSGame });
+    const JogoRPS = { player: this.message.author, opponent: this.opponent, playerPick: this.playerPick, opponentPick: this.opponentPick };
+    if (result === 'win') JogoRPS.winner = this.player1Won() ? this.message.author.id : this.opponent.id;
+    this.emit('gameOver', { result, ...JogoRPS });
     this.player1Turn = this.player1Won();
 
-
     const embed = new EmbedBuilder()
-    .setColor(this.options.embed.color)
-    .setTitle(this.options.embed.title)
-    .setFooter({ text: this.message.author.tag + ' vs ' + this.opponent.tag })
-    .setDescription(this.formatTurnMessage(this.options, result+'Message'))
-    .addFields({ name: this.message.author.username, value: this.playerPick ?? '❔', inline: true })
-    .addFields({ name: 'VS', value: '⚡', inline: true })
-    .addFields({ name: this.opponent.username, value: this.opponentPick ?? '❔', inline: true })
-    
+      .setColor(this.options.embed.color)
+      .setTitle(this.options.embed.title)
+      .setFooter({ text: this.message.author.tag + ' vs ' + this.opponent.tag })
+      .setDescription(this.formatTurnMessage(this.options, result + 'Message'))
+      .addFields({ name: this.message.author.username, value: this.playerPick ?? '❔', inline: true })
+      .addFields({ name: 'VS', value: '⚡', inline: true })
+      .addFields({ name: this.opponent.username, value: this.opponentPick ?? '❔', inline: true });
+
     return msg.edit({ embeds: [embed], components: [] });
   }
 }

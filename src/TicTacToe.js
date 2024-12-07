@@ -8,7 +8,16 @@ module.exports = class TicTacToe extends approve {
 
     if (!options.isSlashGame) options.isSlashGame = false;
     if (!options.message) throw new TypeError('NO_MESSAGE: No message option was provided.');
-    if (!options.opponent) throw new TypeError('NO_OPPONENT: No opponent option was provided.');
+    if (!options.opponent) {
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000') // Cor vermelha para o aviso
+        .setTitle('Aviso')
+        .setDescription('Você precisa fornecer um oponente para iniciar o jogo de Pedra Papel Tesoura.');
+
+      options.message.channel.send({ embeds: [embed] });
+      
+      throw new TypeError('NO_OPPONENT: No opponent option was provided.');
+    };
     if (typeof options.message !== 'object') throw new TypeError('INVALID_MESSAGE: message option must be an object.');
     if (typeof options.isSlashGame !== 'boolean') throw new TypeError('INVALID_COMMAND_TYPE: isSlashGame option must be a boolean.');
     if (typeof options.opponent !== 'object') throw new TypeError('INVALID_OPPONENT: opponent option must be an object.');
